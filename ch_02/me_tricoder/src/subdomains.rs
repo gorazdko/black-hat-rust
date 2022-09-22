@@ -21,7 +21,7 @@ pub fn enumerate(http_client: Client, target: &str) -> Result<Vec<Subdomain>, Bo
 
     let x: Vec<&str> = name_value
         .iter()
-        .flat_map(|name| name.name_value.split("\n").collect::<Vec<&str>>())
+        .flat_map(|name| name.name_value.split("\n"))
         .filter(|x| x != &target)
         .filter(|x| !x.contains('*'))
         .collect();
