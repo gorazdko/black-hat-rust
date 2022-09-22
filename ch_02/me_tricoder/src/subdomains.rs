@@ -15,16 +15,20 @@ struct Names {
     name_value: String,
 }
 
+use std::collections::HashSet;
+
 pub fn enumerate(http_client: Client, target: &str) -> Result<Vec<Subdomain>, Box<dyn Error>> {
     let name_value: Vec<Names> = http_client.get(target).send()?.json()?;
     //println!("{:?}", name_value);
 
-    let x: Vec<&str> = name_value
+    let mut x: HashSet<&str> = name_value
         .iter()
         .flat_map(|name| name.name_value.split("\n"))
         .filter(|x| x != &target)
         .filter(|x| !x.contains('*'))
         .collect();
+
+    x.insert(&target);
 
     //println!("evo: {:?}", x);
 
