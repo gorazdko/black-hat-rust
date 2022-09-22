@@ -8,5 +8,6 @@ pub fn print_status(status: Status) {
     match status {
         Status::Queued => println!("queued"),
         Status::Running => println!("running"),
+        _ => println!("Other / Failed"),
     }
 }
