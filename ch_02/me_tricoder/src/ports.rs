@@ -1,10 +1,6 @@
-//use crate::model::{Port, Subdomain};
+//use crate::model::Subdomain;
 
-#[derive(Debug, Clone)]
-pub struct Port {
-    pub port: u16,
-    pub is_open: bool,
-}
+use crate::model::{Port, Subdomain};
 
 use std::net::{SocketAddr, ToSocketAddrs};
 use std::{net::TcpStream, time::Duration};
@@ -18,11 +14,22 @@ pub const MOST_COMMON_PORTS_100: &[u16] = &[
     13, 1029, 9, 5051, 6646, 49157, 1028, 873, 1755, 2717, 4899, 9100, 119, 37,
 ];
 
+fn scan_ports(mut subdomain: Subdomain) -> Subdomain {
+    let ports: Vec<Port> = MOST_COMMON_PORTS_100
+        .into_iter()
+        .map(|p| scan_port(&subdomain.name, *p))
+        .filter(|p| p.is_open)
+        .collect();
+
+    subdomain.port = ports;
+    subdomain
+}
+
 fn scan_port(hostname: &str, port: u16) -> Port {
     // socket address
     // connect timeout
 
-    let delay = Duration::from_secs(3);
+    let delay = Duration::from_secs(1);
 
     let addr = format!("{}:{}", hostname, port);
 
@@ -55,5 +62,15 @@ mod tests {
 
         let res = scan_port("www.google.com", 8080);
         assert_eq!(res.is_open, false);
+    }
+
+    #[test]
+    fn test_scan_ports() {
+        let mut subdomain = Subdomain {
+            name: "www.google.com".to_string(),
+            port: Vec::new(),
+        };
+        let res = scan_ports(subdomain);
+        println!("{:?}", res);
     }
 }

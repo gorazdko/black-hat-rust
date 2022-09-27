@@ -3,11 +3,7 @@ use reqwest::blocking::Client;
 
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug)]
-pub struct Subdomain {
-    name: String,
-    port: Vec<u8>,
-}
+use crate::model::Subdomain;
 
 #[derive(Deserialize, Debug)]
 struct Names {
@@ -48,7 +44,9 @@ pub fn enumerate(http_client: Client, target: &str) -> Result<Vec<Subdomain>, Bo
 #[cfg(test)]
 mod tests {
     use crate::subdomains::*;
+    #[ignore]
     #[test]
+
     fn test_enumerate() {
         let c = Client::new(); // https://crt.sh/?q=%25.l-tek.com&output=json
         let target = &format!("https://crt.sh/?q=%25.kerkour.com&output=json");
