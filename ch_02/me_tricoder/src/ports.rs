@@ -28,6 +28,7 @@ fn scan_port(hostname: &str, port: u16) -> Port {
 
     let mut addrs_iter = addr.to_socket_addrs().unwrap();
 
+    //let mut addrs_iter = SocketAddr::from_str().unwrap();
     //let socket = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 8080);
     let res = TcpStream::connect_timeout(&addrs_iter.next().unwrap(), delay);
 
@@ -49,7 +50,10 @@ mod tests {
     use crate::ports::*;
     #[test]
     fn test_scan_port() {
-        let res = scan_port("www.google.com", 8);
+        let res = scan_port("www.google.com", 80);
+        assert_eq!(res.is_open, true);
+
+        let res = scan_port("www.google.com", 8080);
         assert_eq!(res.is_open, false);
     }
 }
