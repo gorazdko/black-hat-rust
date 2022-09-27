@@ -1,8 +1,7 @@
 use reqwest::blocking;
 use reqwest::blocking::Client;
-use serde::{Deserialize, Serialize};
 
-use std::error::Error;
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug)]
 pub struct Subdomain {
@@ -14,6 +13,8 @@ pub struct Subdomain {
 struct Names {
     name_value: String,
 }
+
+use std::error::Error;
 
 use std::collections::HashSet;
 
