@@ -2,6 +2,8 @@
 
 use crate::model::{Port, Subdomain};
 
+use rayon::prelude::*;
+
 use std::net::{SocketAddr, ToSocketAddrs};
 use std::{net::TcpStream, time::Duration};
 
@@ -16,7 +18,7 @@ pub const MOST_COMMON_PORTS_100: &[u16] = &[
 
 fn scan_ports(mut subdomain: Subdomain) -> Subdomain {
     let ports: Vec<Port> = MOST_COMMON_PORTS_100
-        .into_iter()
+        .par_iter()
         .map(|p| scan_port(&subdomain.name, *p))
         .filter(|p| p.is_open)
         .collect();
