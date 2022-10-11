@@ -1,5 +1,5 @@
 use reqwest::blocking;
-use reqwest::blocking::Client;
+use reqwest::Client;
 
 use serde::{Deserialize, Serialize};
 
@@ -14,12 +14,17 @@ use std::error::Error;
 
 use std::collections::HashSet;
 
-pub fn enumerate(http_client: Client, target: &str) -> Result<Vec<Subdomain>, Box<dyn Error>> {
+pub async fn enumerate(
+    http_client: Client,
+    target: &str,
+) -> Result<Vec<Subdomain>, Box<dyn Error>> {
     //println!("target: {:?}", target);
 
     //println!("++++++++++++++++");
 
-    let name_value: Vec<Names> = http_client.get(target).send()?.json()?;
+    let target = &format!("https://crt.sh/?q=%25.{}&output=json", target);
+
+    let name_value: Vec<Names> = http_client.get(target).send().await?.json().await?;
     //println!("name_value {:?}", name_value);
 
     //println!("***********");
@@ -50,14 +55,17 @@ pub fn enumerate(http_client: Client, target: &str) -> Result<Vec<Subdomain>, Bo
 #[cfg(test)]
 mod tests {
     use crate::subdomains::*;
-    #[ignore]
-    #[test]
-
-    fn test_enumerate() {
+    //#[ignore]
+    #[tokio::test]
+    async fn test_enumerate() {
         let c = Client::new(); // https://crt.sh/?q=%25.l-tek.com&output=json
-        let target = &format!("https://crt.sh/?q=%25.kerkour.com&output=json");
+        let target = "kerkour.com"; //&format!("https://crt.sh/?q=%25.kerkour.com&output=json");
         let err = enumerate(c, target);
-        assert!(err.is_ok());
-        println!("{:?}", err.unwrap());
+        //assert!(err.is_ok());
+
+        async {
+            println!("result: {:?}", err.await.unwrap());
+        }
+        .await;
     }
 }
