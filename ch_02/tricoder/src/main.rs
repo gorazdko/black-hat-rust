@@ -31,11 +31,16 @@ fn main() -> Result<(), anyhow::Error> {
         .build()
         .unwrap();
 
+    let scan_result: Vec<Subdomain> = subdomains::enumerate(&http_client, target).unwrap();
+    //.into_iter() // into_par_iter
+    //.map(ports::scan_ports)
+    // .collect();
+    /*
     // pool.install is required to use our custom threadpool, instead of rayon's default one
     pool.install(|| {
         let scan_result: Vec<Subdomain> = subdomains::enumerate(&http_client, target)
             .unwrap()
-            .into_par_iter()
+            .into_par_iter() // into_par_iter
             .map(ports::scan_ports)
             .collect();
 
@@ -46,8 +51,10 @@ fn main() -> Result<(), anyhow::Error> {
             }
 
             println!();
+
         }
-    });
+
+    }); */
 
     Ok(())
 }
