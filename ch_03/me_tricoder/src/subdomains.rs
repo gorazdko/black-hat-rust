@@ -14,6 +14,14 @@ use std::error::Error;
 
 use std::collections::HashSet;
 
+use trust_dns_resolver::AsyncResolver;
+
+type DnsRsolver = AsyncResolver<GenericConnection, GenericConnectionProvider<TokioRuntime>>;
+
+fn resolves(resolver: DnsRsolver, hostname: String) -> bool {
+    let res = resolver.lookup_ip(hostname).await.is_ok();
+}
+
 pub async fn enumerate(
     http_client: Client,
     target: &str,
@@ -21,6 +29,8 @@ pub async fn enumerate(
     //println!("target: {:?}", target);
 
     //println!("++++++++++++++++");
+
+    let dns_resolver = AsyncResolver::tokio_from_system_conf();
 
     let target = &format!("https://crt.sh/?q=%25.{}&output=json", target);
 
@@ -37,6 +47,9 @@ pub async fn enumerate(
         .collect();
 
     x.insert(&target);
+
+    // check if subdominas actually resolve correctly:
+    // todo resolves() chain subdomains through resolve function
 
     //println!("evo: {:?}", x);
 
