@@ -16,10 +16,14 @@ use std::collections::HashSet;
 
 use trust_dns_resolver::AsyncResolver;
 
+use trust_dns_resolver::name_server::GenericConnection;
+use trust_dns_resolver::name_server::GenericConnectionProvider;
+use trust_dns_resolver::name_server::TokioRuntime;
 type DnsRsolver = AsyncResolver<GenericConnection, GenericConnectionProvider<TokioRuntime>>;
 
-fn resolves(resolver: DnsRsolver, hostname: String) -> bool {
+async fn resolves(resolver: DnsRsolver, hostname: String) -> bool {
     let res = resolver.lookup_ip(hostname).await.is_ok();
+    res
 }
 
 pub async fn enumerate(
