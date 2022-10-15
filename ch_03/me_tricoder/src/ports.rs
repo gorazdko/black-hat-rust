@@ -5,7 +5,14 @@ use crate::model::{Port, Subdomain};
 use rayon::prelude::*;
 
 use std::net::{SocketAddr, ToSocketAddrs};
-use std::{net::TcpStream, time::Duration};
+use std::time::Duration;
+use tokio::sync::mpsc;
+
+use tokio::net::TcpStream;
+use tokio::time::timeout;
+
+use futures::stream;
+use futures::StreamExt;
 
 pub const MOST_COMMON_PORTS_100: &[u16] = &[
     80, 23, 443, 21, 22, 25, 3389, 110, 445, 139, 143, 53, 135, 3306, 8080, 1723, 111, 995, 993,
@@ -16,18 +23,49 @@ pub const MOST_COMMON_PORTS_100: &[u16] = &[
     13, 1029, 9, 5051, 6646, 49157, 1028, 873, 1755, 2717, 4899, 9100, 119, 37,
 ];
 
-pub fn scan_ports(mut subdomain: Subdomain) -> Subdomain {
-    let ports: Vec<Port> = MOST_COMMON_PORTS_100
-        .par_iter()
-        .map(|p| scan_port(&subdomain.name, *p))
-        .filter(|p| p.is_open)
-        .collect();
+pub async fn scan_ports(concurrency: usize, mut subdomain: Subdomain) -> Subdomain {
+    let mut ret = subdomain.clone();
 
-    subdomain.port = ports;
-    subdomain
+    let (tx1, mut rx1) = mpsc::channel(concurrency);
+    let (tx2, mut rx2) = mpsc::channel(concurrency);
+
+    tokio::spawn(async move {
+        for port in MOST_COMMON_PORTS_100 {
+            tx1.send(port).await;
+        }
+    });
+
+    let input_rx_stream = tokio_stream::wrappers::ReceiverStream::new(rx1);
+    input_rx_stream
+        .for_each_concurrent(2, |port| {
+            let tx2c = tx2.clone();
+            let subdomain_copy = subdomain.clone();
+            async move {
+                let port = scan_port(&subdomain_copy.name, *port).await;
+                if port.is_open {
+                    tx2c.send(port).await;
+                }
+            }
+        })
+        .await;
+
+    let output_rx_stream = tokio_stream::wrappers::ReceiverStream::new(rx2);
+    ret.port = output_rx_stream.collect().await;
+    ret
+
+    /*
+        let ports: Vec<Port> = MOST_COMMON_PORTS_100
+            .par_iter()
+            .map(|p| scan_port(&subdomain.name, *p))
+            .filter(|p| p.is_open)
+            .collect();
+
+        subdomain.port = ports;
+        subdomain
+    */
 }
 
-fn scan_port(hostname: &str, port: u16) -> Port {
+async fn scan_port(hostname: &str, port: u16) -> Port {
     // socket address
     // connect timeout
 
@@ -48,10 +86,12 @@ fn scan_port(hostname: &str, port: u16) -> Port {
 
     //let mut addrs_iter = SocketAddr::from_str().unwrap();
     //let socket = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 8080);
-    let res = TcpStream::connect_timeout(
-        &addrs_iter.unwrap().next().expect("connect timeout nack"),
-        delay,
-    );
+
+    let res = timeout(
+        Duration::from_millis(3000),
+        tokio::net::TcpStream::connect(&addrs_iter.unwrap().next().expect("connect timeout nack")),
+    )
+    .await;
 
     if res.is_err() {
         Port {
@@ -69,22 +109,24 @@ fn scan_port(hostname: &str, port: u16) -> Port {
 #[cfg(test)]
 mod tests {
     use crate::ports::*;
-    #[test]
-    fn test_scan_port() {
-        let res = scan_port("www.google.com", 80);
+    #[tokio::test]
+    async fn test_scan_port() {
+        let res = scan_port("www.google.com", 80).await;
         assert_eq!(res.is_open, true);
 
-        let res = scan_port("www.google.com", 8080);
+        let res = scan_port("www.google.com", 8080).await;
         assert_eq!(res.is_open, false);
     }
 
-    #[test]
-    fn test_scan_ports() {
-        let mut subdomain = Subdomain {
-            name: "www.google.com".to_string(),
-            port: Vec::new(),
-        };
-        let res = scan_ports(subdomain);
-        println!("{:?}", res);
-    }
+    /*
+      #[tokio::test]
+        fn test_scan_ports() {
+            let mut subdomain = Subdomain {
+                name: "www.google.com".to_string(),
+                port: Vec::new(),
+            };
+            let res = scan_ports(subdomain);
+            println!("{:?}", res);
+        }
+    */
 }

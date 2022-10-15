@@ -11,7 +11,7 @@ pub struct Port {
     pub is_open: bool,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Subdomain {
     pub name: String,
     pub port: Vec<Port>,
