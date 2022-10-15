@@ -35,9 +35,11 @@ pub async fn scan_ports(concurrency: usize, mut subdomain: Subdomain) -> Subdoma
         }
     });
 
+    println!("here");
+
     let input_rx_stream = tokio_stream::wrappers::ReceiverStream::new(rx1);
     input_rx_stream
-        .for_each_concurrent(2, |port| {
+        .for_each_concurrent(concurrency, |port| {
             let tx2c = tx2.clone();
             let subdomain_copy = subdomain.clone();
             async move {
@@ -49,8 +51,14 @@ pub async fn scan_ports(concurrency: usize, mut subdomain: Subdomain) -> Subdoma
         })
         .await;
 
+    println!("here2");
+    // close channel
+    drop(tx2);
+
     let output_rx_stream = tokio_stream::wrappers::ReceiverStream::new(rx2);
     ret.port = output_rx_stream.collect().await;
+
+    println!("here3");
     ret
 
     /*
@@ -73,7 +81,7 @@ async fn scan_port(hostname: &str, port: u16) -> Port {
 
     let addr = format!("{}:{}", hostname, port);
 
-    //println!("socket addr: {:?}", addr);
+    println!("socket addr: {:?}", addr);
     let mut addrs_iter = addr.to_socket_addrs();
     //.expect(&format!("to socket addrs: {:?}", addr));
 
@@ -118,15 +126,13 @@ mod tests {
         assert_eq!(res.is_open, false);
     }
 
-    /*
-      #[tokio::test]
-        fn test_scan_ports() {
-            let mut subdomain = Subdomain {
-                name: "www.google.com".to_string(),
-                port: Vec::new(),
-            };
-            let res = scan_ports(subdomain);
-            println!("{:?}", res);
-        }
-    */
+    #[tokio::test]
+    async fn test_scan_ports() {
+        let mut subdomain = Subdomain {
+            name: "www.google.com".to_string(),
+            port: Vec::new(),
+        };
+        let res = scan_ports(100, subdomain).await;
+        println!("{:?}", res);
+    }
 }
