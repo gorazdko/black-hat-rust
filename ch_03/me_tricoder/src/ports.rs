@@ -35,8 +35,6 @@ pub async fn scan_ports(concurrency: usize, mut subdomain: Subdomain) -> Subdoma
         }
     });
 
-    println!("here");
-
     let input_rx_stream = tokio_stream::wrappers::ReceiverStream::new(rx1);
     input_rx_stream
         .for_each_concurrent(concurrency, |port| {
@@ -51,14 +49,12 @@ pub async fn scan_ports(concurrency: usize, mut subdomain: Subdomain) -> Subdoma
         })
         .await;
 
-    println!("here2");
     // close channel
     drop(tx2);
 
     let output_rx_stream = tokio_stream::wrappers::ReceiverStream::new(rx2);
     ret.port = output_rx_stream.collect().await;
 
-    println!("here3");
     ret
 
     /*

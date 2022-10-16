@@ -1,4 +1,4 @@
-use reqwest::blocking;
+//use reqwest::blocking;
 use reqwest::Client;
 
 use serde::{Deserialize, Serialize};
