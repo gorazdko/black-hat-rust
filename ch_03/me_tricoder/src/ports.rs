@@ -101,7 +101,7 @@ async fn scan_port(hostname: &str, port: u16) -> Port {
     )
     .await;
 
-    if res.is_err() {
+    if res.is_err() || (res.unwrap().is_err()) {
         Port {
             port: port,
             is_open: false,
@@ -132,7 +132,7 @@ mod tests {
             name: "www.google.com".to_string(),
             port: Vec::new(),
         };
-        let res = scan_ports(100, subdomain).await;
+        let res = scan_ports(150, subdomain).await;
         println!("{:?}", res);
     }
 }
