@@ -1,0 +1,2 @@
+mod gitlab_open_registrations;
+use gitlab_open_registrations::GitlabOpenRegistrations;

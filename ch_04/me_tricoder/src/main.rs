@@ -15,6 +15,12 @@ use std::{env, time::Duration};
 use futures::stream;
 use futures::StreamExt;
 
+mod modules;
+//use gitlab_open_registration;
+
+mod error;
+pub use error::Error;
+
 #[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {
     let http_timeout = Duration::from_secs(5);
