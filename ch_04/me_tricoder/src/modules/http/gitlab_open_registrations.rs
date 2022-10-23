@@ -41,9 +41,9 @@ mod tests {
     use crate::modules::HttpModule;
     #[tokio::test]
     async fn test_GitlabOpenRegistrations() {
-        let client = go::Client::new();
+        let client = go::Client::new(); // TODO:: connect timeout
         let p = go::GitlabOpenRegistrations {};
-        let res = p.scan(&client, "http://www.google.com:80").await;
+        let res = p.scan(&client, "http://www.l-tek.com:443").await;
 
         println!("res: {:?}", res);
     }
