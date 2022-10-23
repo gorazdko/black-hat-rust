@@ -34,3 +34,17 @@ impl Module for GitlabOpenRegistrations {
         return "GitlabOpenRegistrations Description".to_string();
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::modules::http::gitlab_open_registrations as go;
+    use crate::modules::HttpModule;
+    #[tokio::test]
+    async fn test_GitlabOpenRegistrations() {
+        let client = go::Client::new();
+        let p = go::GitlabOpenRegistrations {};
+        let res = p.scan(&client, "http://www.google.com:80").await;
+
+        println!("res: {:?}", res);
+    }
+}

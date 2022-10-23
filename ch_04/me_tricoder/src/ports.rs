@@ -125,7 +125,7 @@ mod tests {
     #[tokio::test]
     async fn test_scan_ports() {
         let mut subdomain = Subdomain {
-            name: "www.google.com".to_string(),
+            name: "www.l-tek.com".to_string(),
             port: Vec::new(),
         };
         let res = scan_ports(150, subdomain).await;
