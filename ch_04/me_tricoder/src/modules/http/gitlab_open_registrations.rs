@@ -15,6 +15,13 @@ impl HttpModule for GitlabOpenRegistrations {
         http_client: &Client,
         endpoint: &str,
     ) -> Result<Option<HttpFinding>, Error> {
+        let body = http_client.get(endpoint).send().await?.text().await?;
+        if body.contains("Gitlab open registrations") {
+            return Ok(Some(HttpFinding::GitlabOpenRegistrations(
+                endpoint.to_string(),
+            )));
+        }
+
         return Ok(None);
     }
 }
