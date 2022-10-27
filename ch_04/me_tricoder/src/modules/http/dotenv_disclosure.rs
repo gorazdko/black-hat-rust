@@ -18,6 +18,7 @@ impl HttpModule for DotEnvDisclosure {
         if res.status() == reqwest::StatusCode::OK {
             return Ok(Some(HttpFinding::DotEnvDisclosure(url)));
         }
+
         Ok(None)
     }
 }
@@ -28,5 +29,19 @@ impl Module for DotEnvDisclosure {
     }
     fn description(&self) -> String {
         return "DotEnvDisclosure Description".to_string();
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn test_DotEnvDisclosure() {
+        let client = Client::new(); // TODO:: connect timeout
+        let p = DotEnvDisclosure {};
+        let res = p.scan(&client, "http://www.l-tek.com:443").await;
+
+        println!("res: {:?}", res);
     }
 }
