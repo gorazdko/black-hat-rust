@@ -39,6 +39,7 @@ impl Module for GitlabOpenRegistrations {
 mod tests {
     use crate::modules::http::gitlab_open_registrations as go;
     use crate::modules::HttpModule;
+    // super::gitlab_open_registrations the keyword is super
     #[tokio::test]
     async fn test_GitlabOpenRegistrations() {
         let client = go::Client::new(); // TODO:: connect timeout

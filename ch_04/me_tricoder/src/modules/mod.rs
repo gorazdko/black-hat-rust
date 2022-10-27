@@ -32,4 +32,5 @@ pub trait HttpModule: Module {
 pub enum HttpFinding {
     GitlabOpenRegistrations(String),
     DsStoreFileDisclosure(String),
+    DotEnvDisclosure(String),
 }
