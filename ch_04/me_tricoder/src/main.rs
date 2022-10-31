@@ -29,7 +29,9 @@ async fn main() -> Result<(), anyhow::Error> {
     let subdomains_concurrency = 100;
     //let scan_start = Instant::now();
     let target = "kerkour.com";
-    let subdomains = subdomains::enumerate(http_client, target).await.unwrap();
+    let subdomains = subdomains::enumerate(http_client.clone(), target)
+        .await
+        .unwrap();
 
     let scan_result: Vec<Subdomain> = stream::iter(subdomains.into_iter())
         .map(|s| ports::scan_ports(ports_concurrency, s))
@@ -50,10 +52,29 @@ async fn main() -> Result<(), anyhow::Error> {
         for port in scan.port {
             let modules = modules::init_modules();
             for module in modules {
-                urls.push((module, format!("{}:{}", scan.name.to_string(), port.port)));
+                urls.push((
+                    module,
+                    format!("http://{}:{}", scan.name.to_string(), port.port),
+                ));
             }
         }
     }
+
+    for u in &urls {
+        println!("{:?}", u.1);
+    }
+
+    stream::iter(urls.into_iter())
+        .for_each_concurrent(100, |(module, url)| {
+            let http_client = http_client.clone();
+            async move {
+                match module.scan(&http_client, &url).await {
+                    Ok(x) => println!("***** {:?}", x),
+                    _ => println!("++++++++++++nope"),
+                }
+            }
+        })
+        .await;
 
     Ok(())
 }
