@@ -39,8 +39,6 @@ async fn main() -> Result<(), anyhow::Error> {
 
     println!("result: {:?}", scan_result);
 
-    let modules = modules::init_modules();
-
     // vulnerabilities:
     //stream::iter(modules.into_iter()).map
 
@@ -48,13 +46,12 @@ async fn main() -> Result<(), anyhow::Error> {
 
     let mut urls: Vec<(Box<dyn modules::HttpModule>, String)> = Vec::new();
 
-    for module in modules {
-        urls.push((module, format!("{}:{}", "scans.name".to_string(), 1)));
-        for scans in &scan_result {
-            /*scans
-            .port
-            .into_iter()
-            .for_each(|p| urls.push((module, format!("{}:{}", scans.name, p.port)))) */
+    for scan in scan_result {
+        for port in scan.port {
+            let modules = modules::init_modules();
+            for module in modules {
+                urls.push((module, format!("{}:{}", scan.name.to_string(), port.port)));
+            }
         }
     }
 
