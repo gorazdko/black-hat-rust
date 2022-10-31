@@ -35,7 +35,7 @@ pub enum HttpFinding {
     DotEnvDisclosure(String),
 }
 
-fn init_modules() -> Vec<Box<dyn HttpModule>> {
+pub fn init_modules() -> Vec<Box<dyn HttpModule>> {
     vec![
         Box::new(http::GitlabOpenRegistrations::new()),
         Box::new(http::DotEnvDisclosure::new()),
