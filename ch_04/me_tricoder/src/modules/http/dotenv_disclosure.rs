@@ -5,6 +5,12 @@ use reqwest::Client;
 
 pub struct DotEnvDisclosure {}
 
+impl DotEnvDisclosure {
+    pub fn new() -> Self {
+        return DotEnvDisclosure {};
+    }
+}
+
 #[async_trait]
 impl HttpModule for DotEnvDisclosure {
     async fn scan(

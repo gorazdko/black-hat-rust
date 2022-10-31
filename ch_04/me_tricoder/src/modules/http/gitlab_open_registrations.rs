@@ -8,6 +8,12 @@ use reqwest::Client;
 
 pub struct GitlabOpenRegistrations {}
 
+impl GitlabOpenRegistrations {
+    pub fn new() -> Self {
+        return GitlabOpenRegistrations {};
+    }
+}
+
 #[async_trait]
 impl HttpModule for GitlabOpenRegistrations {
     async fn scan(
