@@ -108,7 +108,17 @@ impl Crawler {
         items_rx: mpsc::Receiver<T>,
         barrier: Arc<Barrier>,
     ) {
-        println!("test");
+        let barrier = barrier.clone();
+        let res = tokio_stream::wrappers::ReceiverStream::new(items_rx).for_each_concurrent(
+            processing_concurrency,
+            |item| {
+                let spider = spider.clone();
+                async move {
+                    let _ = spider.process(item).await;
+                }
+            },
+        );
+        barrier.wait();
     }
 
     pub fn launch_scrapers<T: Send + 'static>(
