@@ -133,6 +133,14 @@ impl Crawler {
         delay: Duration,
         barrier: Arc<Barrier>,
     ) {
-        println!("test");
+        tokio::spawn(async move {
+            let barrier = barrier.clone();
+            let res = tokio_stream::wrappers::ReceiverStream::new(urls_to_visit_rx)
+                .for_each_concurrent(crawling_concurrency, |url| async {
+                    let res = spider.scrape(url).await;
+                })
+                .await;
+            barrier.wait().await;
+        });
     }
 }
