@@ -137,7 +137,18 @@ impl Crawler {
             let barrier = barrier.clone();
             let res = tokio_stream::wrappers::ReceiverStream::new(urls_to_visit_rx)
                 .for_each_concurrent(crawling_concurrency, |url| async {
-                    let res = spider.scrape(url).await;
+                    let res = spider.scrape(url.clone()).await;
+
+                    match res {
+                        Ok(items) => {
+                            for item in items.0 {
+                                items_tx.send(item).await;
+                            }
+
+                            new_urls_tx.send((url, items.1)).await;
+                        }
+                        _ => {}
+                    }
                 })
                 .await;
             barrier.wait().await;
