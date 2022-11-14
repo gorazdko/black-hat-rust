@@ -135,9 +135,13 @@ impl Crawler {
     ) {
         tokio::spawn(async move {
             let barrier = barrier.clone();
+
             let res = tokio_stream::wrappers::ReceiverStream::new(urls_to_visit_rx)
                 .for_each_concurrent(crawling_concurrency, |url| async {
+                    active_spiders.fetch_add(1, Ordering::SeqCst);
                     let res = spider.scrape(url.clone()).await;
+
+                    let mut new_urls = Vec::new();
 
                     match res {
                         Ok(items) => {
@@ -145,12 +149,17 @@ impl Crawler {
                                 items_tx.send(item).await;
                             }
 
-                            new_urls_tx.send((url, items.1)).await;
+                            new_urls = items.1;
                         }
-                        _ => {}
+                        Err(er) => {
+                            log::debug!("Error: {}", er);
+                        }
                     }
+                    new_urls_tx.send((url, new_urls)).await;
+                    active_spiders.fetch_sub(1, Ordering::SeqCst);
                 })
                 .await;
+
             barrier.wait().await;
         });
     }

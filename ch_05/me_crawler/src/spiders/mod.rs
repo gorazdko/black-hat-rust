@@ -1,6 +1,10 @@
 use crate::error::Error;
 
+mod cvedetails;
+
 use async_trait::async_trait;
+
+use reqwest::Client;
 
 #[async_trait]
 pub trait Spider: Send + Sync {
