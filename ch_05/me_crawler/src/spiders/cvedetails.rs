@@ -5,9 +5,22 @@
 use crate::error::Error;
 use async_trait::async_trait;
 use reqwest::Client;
+use std::time::Duration;
 
 pub struct CveDetailsSpider {
     http_client: Client,
+}
+
+impl CveDetailsSpider {
+    fn new() -> Self {
+        let builder = Client::builder();
+        let tmout = Duration::from_millis(5000);
+        let client = builder.timeout(tmout).build().unwrap(); // TODO
+
+        CveDetailsSpider {
+            http_client: client,
+        }
+    }
 }
 
 #[async_trait]
@@ -15,12 +28,15 @@ impl super::Spider for CveDetailsSpider {
     type Item = Cve;
 
     fn name(&self) -> String {
-        return "ss".to_string();
+        String::from("cvedetails")
     }
+
     fn start_urls(&self) -> Vec<String> {
-        Vec::from(["dd".to_string()])
+        vec!["https://www.cvedetails.com/vulnerability-list/vulnerabilities.html".to_string()]
     }
+
     async fn scrape(&self, url: String) -> Result<(Vec<Self::Item>, Vec<String>), Error> {
+        let res = self.http_client.get(url).send().await?.text().await?;
         Err(Error::Reqwest(String::from("Hello, world!")))
     }
     async fn process(&self, item: Self::Item) -> Result<(), Error> {
