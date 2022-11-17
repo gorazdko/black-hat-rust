@@ -2,6 +2,8 @@
 //    println!("test process");
 //}
 
+use crate::error::Error;
+use async_trait::async_trait;
 use reqwest::Client;
 
 pub struct CveDetailsSpider {
@@ -19,10 +21,10 @@ impl super::Spider for CveDetailsSpider {
         Vec::from(["dd".to_string()])
     }
     async fn scrape(&self, url: String) -> Result<(Vec<Self::Item>, Vec<String>), Error> {
-        Error::Reqwest(String::from("Hello, world!"))
+        Err(Error::Reqwest(String::from("Hello, world!")))
     }
     async fn process(&self, item: Self::Item) -> Result<(), Error> {
-        Error::Reqwest(String::from("Hello, world!"))
+        Err(Error::Reqwest(String::from("Hello, world!")))
     }
 }
 
