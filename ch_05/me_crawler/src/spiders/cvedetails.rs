@@ -61,3 +61,17 @@ pub struct Cve {
     integrity: String,
     availability: String,
 }
+
+use crate::spiders::Spider;
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[tokio::test]
+    async fn test_crawler() {
+        let crawler = CveDetailsSpider::new();
+
+        println!("crawler name: {:?}", crawler.name());
+    }
+}
