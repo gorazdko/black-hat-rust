@@ -37,6 +37,7 @@ impl super::Spider for CveDetailsSpider {
 
     async fn scrape(&self, url: String) -> Result<(Vec<Self::Item>, Vec<String>), Error> {
         let res = self.http_client.get(url).send().await?.text().await?;
+        println!("res: {:?}", res);
         Err(Error::Reqwest(String::from("Hello, world!")))
     }
     async fn process(&self, item: Self::Item) -> Result<(), Error> {
@@ -73,5 +74,11 @@ mod tests {
         let crawler = CveDetailsSpider::new();
 
         println!("crawler name: {:?}", crawler.name());
+
+        let strg = crawler
+            .scrape(crawler.start_urls()[0].clone())
+            .await
+            .unwrap();
+        println!("crawler respond: {:?}", strg);
     }
 }
