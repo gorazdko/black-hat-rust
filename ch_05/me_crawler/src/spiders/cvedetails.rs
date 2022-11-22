@@ -7,6 +7,11 @@ use async_trait::async_trait;
 use reqwest::Client;
 use std::time::Duration;
 
+use select::{
+    document::Document,
+    predicate::{Attr, Class, Name, Predicate},
+};
+
 pub struct CveDetailsSpider {
     http_client: Client,
 }
@@ -37,7 +42,12 @@ impl super::Spider for CveDetailsSpider {
 
     async fn scrape(&self, url: String) -> Result<(Vec<Self::Item>, Vec<String>), Error> {
         let res = self.http_client.get(url).send().await?.text().await?;
-        println!("res: {:?}", res);
+        //println!("res: {:?}", res);
+
+        let next_pages_link = Document::from(res.as_str());
+
+        //next_pages_link.find(Predicate::)
+
         Err(Error::Reqwest(String::from("Hello, world!")))
     }
     async fn process(&self, item: Self::Item) -> Result<(), Error> {
