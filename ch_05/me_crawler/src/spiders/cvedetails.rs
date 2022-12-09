@@ -26,6 +26,15 @@ impl CveDetailsSpider {
             http_client: client,
         }
     }
+
+    fn normalize_url(&self, url: String) -> String {
+        url.trim();
+        if url.starts_with("/") {
+            return format!("https://www.cvedetails.com{}", url);
+        } else {
+            return url;
+        }
+    }
 }
 
 #[async_trait]
@@ -56,10 +65,13 @@ impl super::Spider for CveDetailsSpider {
         let mut links = Vec::new();
         let mut i = 0;
         for r in res {
-            links.push(r.attr("href"));
-            i += 1;
-            if i > 10 {
-                break;
+            let x = r.attr("href");
+            if x.is_some() {
+                links.push(self.normalize_url(String::from(x.unwrap())));
+                i += 1;
+                if i > 10 {
+                    break;
+                }
             }
         }
 
