@@ -19,7 +19,7 @@ pub struct CveDetailsSpider {
 impl CveDetailsSpider {
     fn new() -> Self {
         let builder = Client::builder();
-        let tmout = Duration::from_millis(5000);
+        let tmout = Duration::from_millis(7000);
         let client = builder.timeout(tmout).build().unwrap(); // TODO
 
         CveDetailsSpider {
@@ -41,13 +41,29 @@ impl super::Spider for CveDetailsSpider {
     }
 
     async fn scrape(&self, url: String) -> Result<(Vec<Self::Item>, Vec<String>), Error> {
+        println!("*** 0[scrape]]");
         let res = self.http_client.get(url).send().await?.text().await?;
-        //println!("res: {:?}", res);
+        println!("***[scrape]]");
 
         let next_pages_link = Document::from(res.as_str());
 
-        //next_pages_link.find(Predicate::)
+        //println!("++res {:?}", next_pages_link);
 
+        println!("*****************************  ******************************");
+
+        let res = next_pages_link.find(Attr("id", "pagingb").descendant(Name("a")));
+
+        let mut links = Vec::new();
+        let mut i = 0;
+        for r in res {
+            links.push(r.attr("href"));
+            i += 1;
+            if i > 10 {
+                break;
+            }
+        }
+
+        println!("**strings: {:?}", links);
         Err(Error::Reqwest(String::from("Hello, world!")))
     }
     async fn process(&self, item: Self::Item) -> Result<(), Error> {
